@@ -1,11 +1,6 @@
 #include <SDL.h>
 
-#include <stdexcept>
-#define DCHECK(condition) \
-if (!(condition))\
-{\
-    throw std::runtime_error(#condition);\
-}
+#include <DebugCheck.h>
 
 int main(int argc, char *argv[])
 {

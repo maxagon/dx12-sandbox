@@ -8,6 +8,7 @@ project(D3D12Sandbox)
 
 # Sources
 add_subdirectory(Sources/HelloWindow)
+add_subdirectory(Sources/Utils)
 
 # 3rd party
 set(SDL_SHARED 0)

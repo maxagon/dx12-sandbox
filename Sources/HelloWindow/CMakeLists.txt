@@ -7,10 +7,9 @@ set(SOURCE_FILES
 add_executable(${TARGET} ${SOURCE_FILES})
 
 target_link_libraries(${TARGET} PUBLIC
+    Utils
     SDL2-static
     SDL2main
 )
-
-#target_link_options(${TARGET} "/MD")
 
 set_property(TARGET ${TARGET} PROPERTY FOLDER "HelloWindow")
