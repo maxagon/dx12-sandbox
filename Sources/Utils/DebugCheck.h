@@ -1,11 +1,20 @@
 #pragma once
 
+#include <string>
+#include <sstream>
 #include <windows.h>
 #include <intrin.h>
+#include <comdef.h>
 
-static bool ShowDebugMessageBox(const char* message)
+static bool ShowDebugMessageBox(const char* message, const char* info)
 {
-    int msgboxID = MessageBox(NULL, (LPCSTR)message, (LPCSTR)"Debug message", MB_ICONWARNING | MB_ABORTRETRYIGNORE | MB_DEFBUTTON2);
+    std::stringstream strMessage;
+    strMessage << "Failed:\n" << message;
+    if (info)
+    {
+        strMessage << "\nInfo: " << info;
+    }
+    int msgboxID = MessageBox(NULL, strMessage.str().c_str(), "Debug message", MB_ICONWARNING | MB_ABORTRETRYIGNORE | MB_DEFBUTTON2);
 
     switch (msgboxID)
     {
@@ -24,10 +33,29 @@ static bool ShowDebugMessageBox(const char* message)
 #define DCHECK(condition) \
 if (!(condition))\
 {\
-    if (ShowDebugMessageBox("Failed: \n" ## #condition))\
+    if (ShowDebugMessageBox(#condition, ""))\
     {\
         __debugbreak();\
     }\
 }
 
-#define DCHECK_COM(hr) DCHECK(SUCCEEDED(hr))
+static const char* GetHrMessage(HRESULT hr)
+{
+    _com_error err(hr);
+    return err.ErrorMessage();
+}
+
+static bool DebugCheckCom(HRESULT hr, const char* condition)
+{
+    if (!SUCCEEDED(hr))
+    {
+        return ShowDebugMessageBox(condition, GetHrMessage(hr));
+    }
+    return false;
+}
+
+#define DCHECK_COM(condition) \
+if (DebugCheckCom(condition, #condition))\
+{\
+    __debugbreak();\
+}
