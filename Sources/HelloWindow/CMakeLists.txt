@@ -3,6 +3,7 @@ set(TARGET MainWindow)
 set(SOURCE_FILES
     MainWindow.cpp
     WindowDX12.cpp
+    CommandAllocatorPool.cpp
 )
 
 add_executable(${TARGET} ${SOURCE_FILES})
