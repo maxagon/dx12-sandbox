@@ -17,6 +17,7 @@ public:
     ID3D12Resource* GetCurrentBackbuffer();
     uint32_t GetCurrentFrameIndex() { return mFrameIndex; };
     void SubmitNextFrame();
+    void WaitForNextFrame();
     void ResizeBackbuffer();
 
 private:
@@ -24,7 +25,8 @@ private:
     CComPtr<IDXGISwapChain3> mSwapChain;
     HANDLE mFenceEvent;
     CComPtr<ID3D12Fence> mFrameFence;
-    std::vector<uint64_t> mFenceValues;
+    uint64_t mFenceValue;
+    std::vector<uint64_t> mFrameFenceValues;
     uint32_t mBackbufferCount;
     HWND mWindowHandle;
     uint32_t mFrameIndex;

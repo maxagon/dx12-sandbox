@@ -24,7 +24,7 @@ int SDL_main(int argc, char *argv[])
     CComPtr<ID3D12Device> device;
     DCHECK_COM(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device)));
 
-    auto dx12Window = std::make_shared<WindowDX12>(GetActiveWindow(), device, 4);
+    auto dx12Window = std::make_shared<WindowDX12>(GetActiveWindow(), device, 2);
 
     while (true)
     {
@@ -36,6 +36,8 @@ int SDL_main(int argc, char *argv[])
                 break;
             }
         }
+        dx12Window->WaitForNextFrame();
+
         dx12Window->SubmitNextFrame();
     }
 

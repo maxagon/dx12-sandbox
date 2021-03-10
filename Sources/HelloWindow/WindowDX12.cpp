@@ -5,8 +5,8 @@
 WindowDX12::WindowDX12(HWND windowHandle, CComPtr<ID3D12Device> device, uint32_t backbufferCount)
     : mBackbufferCount(backbufferCount)
     , mWindowHandle(windowHandle)
-    , mFenceValues(backbufferCount)
-    , mFrameIndex(0)
+    , mFrameFenceValues(backbufferCount)
+    , mFenceValue(0)
 {
     D3D12_COMMAND_QUEUE_DESC commandQueueDesc{};
     commandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
@@ -30,8 +30,7 @@ WindowDX12::WindowDX12(HWND windowHandle, CComPtr<ID3D12Device> device, uint32_t
     ResizeBackbuffer();
 
     mFrameIndex = mSwapChain->GetCurrentBackBufferIndex();
-    device->CreateFence(mFenceValues[mFrameIndex], D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mFrameFence));
-    mFenceValues[mFrameIndex]++;
+    device->CreateFence(mFenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mFrameFence));
     mFenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
 }
@@ -48,18 +47,21 @@ ID3D12Resource* WindowDX12::GetCurrentBackbuffer()
     return backBuffer;
 }
 
-void WindowDX12::SubmitNextFrame()
+void WindowDX12::WaitForNextFrame()
 {
-    DCHECK_COM(mSwapChain->Present(1, 0));
-    mFrameIndex = mSwapChain->GetCurrentBackBufferIndex();
-    uint64_t fenceValue = mFenceValues[mFrameIndex];
-    mRenderQueue->Signal(mFrameFence, fenceValue);
-    if (mFrameFence->GetCompletedValue() < fenceValue)
+    if (mFrameFence->GetCompletedValue() < mFrameFenceValues[mFrameIndex])
     {
-        DCHECK_COM(mFrameFence->SetEventOnCompletion(fenceValue, mFenceEvent));
+        DCHECK_COM(mFrameFence->SetEventOnCompletion(mFrameFenceValues[mFrameIndex], mFenceEvent));
         WaitForSingleObjectEx(mFenceEvent, INFINITE, FALSE);
     }
-    mFenceValues[mFrameIndex] = fenceValue + 1;
+}
+
+void WindowDX12::SubmitNextFrame()
+{
+    mRenderQueue->Signal(mFrameFence, ++mFenceValue);
+    mFrameFenceValues[mFrameIndex] = mFenceValue;
+    DCHECK_COM(mSwapChain->Present(1, 0));
+    mFrameIndex = mSwapChain->GetCurrentBackBufferIndex();
 }
 
 void WindowDX12::ResizeBackbuffer()
