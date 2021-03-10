@@ -1,5 +1,6 @@
 #include "WindowDX12.h"
 
+#include <d3dx12.h>
 #include <DebugCheck.h>
 
 WindowDX12::WindowDX12(HWND windowHandle, CComPtr<ID3D12Device> device, uint32_t backbufferCount)
@@ -33,6 +34,21 @@ WindowDX12::WindowDX12(HWND windowHandle, CComPtr<ID3D12Device> device, uint32_t
     device->CreateFence(mFenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mFrameFence));
     mFenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
+    mRtvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
+    D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
+    rtvHeapDesc.NumDescriptors = mBackbufferCount;
+    rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+    rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+    DCHECK_COM(device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&mRtvHeap)));
+
+    for (uint32_t frameIndex = 0; frameIndex < mBackbufferCount; ++frameIndex)
+    {
+        CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(mRtvHeap->GetCPUDescriptorHandleForHeapStart(), frameIndex, mRtvDescriptorSize);
+        ID3D12Resource* buffer = nullptr;
+        mSwapChain->GetBuffer(frameIndex, IID_PPV_ARGS(&buffer));
+        device->CreateRenderTargetView(buffer, nullptr, rtvHandle);
+    }
 }
 
 WindowDX12::~WindowDX12()
@@ -66,9 +82,15 @@ void WindowDX12::SubmitNextFrame()
 
 void WindowDX12::ResizeBackbuffer()
 {
-    RECT windowRect{};
-    GetClientRect(mWindowHandle, &windowRect);
-    UINT sizeX = windowRect.right;
-    UINT sizeY = windowRect.left;
+    GetClientRect(mWindowHandle, &mWindowRect);
+    UINT sizeX = mWindowRect.right;
+    UINT sizeY = mWindowRect.bottom;
     mSwapChain->ResizeBuffers(mBackbufferCount, sizeX, sizeY, DXGI_FORMAT_UNKNOWN, 0);
+    mViewport = CD3DX12_VIEWPORT(0.0f, 0.0f, (float)sizeX, (float)sizeY, 0.0f, 1.0f);
 }
+
+D3D12_CPU_DESCRIPTOR_HANDLE WindowDX12::GetCurrentRtvHandle()
+{
+    return CD3DX12_CPU_DESCRIPTOR_HANDLE(mRtvHeap->GetCPUDescriptorHandleForHeapStart(), mFrameIndex, mRtvDescriptorSize);
+}
+

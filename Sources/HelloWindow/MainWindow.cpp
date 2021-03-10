@@ -5,6 +5,8 @@
 #include <d3d12.h>
 
 #include "WindowDX12.h"
+#include "CommandAllocatorPool.h"
+
 
 int SDL_main(int argc, char *argv[])
 {
@@ -24,7 +26,9 @@ int SDL_main(int argc, char *argv[])
     CComPtr<ID3D12Device> device;
     DCHECK_COM(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device)));
 
-    auto dx12Window = std::make_shared<WindowDX12>(GetActiveWindow(), device, 2);
+    static constexpr uint32_t backbufferCount = 2;
+    auto dx12Window = std::make_shared<WindowDX12>(GetActiveWindow(), device, backbufferCount);
+    auto allocatorPool = std::make_shared<CommandAllocatorPool>(device, backbufferCount);
 
     while (true)
     {
@@ -37,6 +41,26 @@ int SDL_main(int argc, char *argv[])
             }
         }
         dx12Window->WaitForNextFrame();
+
+        CComPtr<ID3D12Device4> device4;
+        DCHECK_COM(device->QueryInterface(IID_PPV_ARGS(&device4)));
+
+        ID3D12CommandAllocator* cmdAllocForFrame = allocatorPool->GetAllocatorForFrame(dx12Window->GetCurrentFrameIndex());
+
+        CComPtr<ID3D12GraphicsCommandList> cmdList;
+        device4->CreateCommandList1(0, D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_LIST_FLAG_NONE, IID_PPV_ARGS(&cmdList));
+        cmdList->Reset(cmdAllocForFrame, nullptr);
+
+        cmdList->RSSetScissorRects(1, &dx12Window->GetWindowRect());
+        cmdList->RSSetViewports(1, &dx12Window->GetViewport());
+        D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = dx12Window->GetCurrentRtvHandle();
+        cmdList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
+        float clearRGB[] = { 1.0f, 0.3f, 0.1f, 1.0f };
+        cmdList->ClearRenderTargetView(rtvHandle, clearRGB, 0, nullptr);
+        DCHECK_COM(cmdList->Close());
+
+        ID3D12CommandList* commandLists[] = { cmdList.p };
+        dx12Window->GetRenderQueue()->ExecuteCommandLists(1, commandLists);
 
         dx12Window->SubmitNextFrame();
     }

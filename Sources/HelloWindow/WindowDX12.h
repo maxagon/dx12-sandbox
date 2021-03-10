@@ -19,6 +19,9 @@ public:
     void SubmitNextFrame();
     void WaitForNextFrame();
     void ResizeBackbuffer();
+    D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentRtvHandle();
+    const D3D12_VIEWPORT& GetViewport() { return mViewport; };
+    const D3D12_RECT& GetWindowRect() { return mWindowRect; };
 
 private:
     CComPtr<ID3D12CommandQueue> mRenderQueue;
@@ -30,4 +33,8 @@ private:
     uint32_t mBackbufferCount;
     HWND mWindowHandle;
     uint32_t mFrameIndex;
+    CComPtr<ID3D12DescriptorHeap> mRtvHeap;
+    uint32_t mRtvDescriptorSize;
+    D3D12_RECT mWindowRect;
+    D3D12_VIEWPORT mViewport;
 };
