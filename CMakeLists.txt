@@ -13,3 +13,5 @@ add_subdirectory(Sources/Utils)
 # 3rd party
 set(SDL_SHARED 0)
 add_subdirectory(3rdparty/SDL)
+
+add_subdirectory(3rdparty/d3dx12)

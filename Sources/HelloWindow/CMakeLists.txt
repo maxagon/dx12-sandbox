@@ -12,6 +12,8 @@ target_link_libraries(${TARGET} PUBLIC
     Utils
     SDL2-static
     SDL2main
+    d3dx12
+
     dxgi
     d3d12
 )
