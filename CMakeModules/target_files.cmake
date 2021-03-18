@@ -8,10 +8,14 @@ function(target_files target)
         ${ARGN}
     )
     foreach(copy_file_src ${T_FILES_ASSETS})
-        set(copy_file_out "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${copy_file_src}")
-        set(copy_file_input "${CMAKE_CURRENT_SOURCE_DIR}/${copy_file_src}")
-        message(${copy_file_input})
-        message(${copy_file_out})
+        if(IS_ABSOLUTE ${copy_file_src})
+            get_filename_component(copy_file ${copy_file_src} NAME)
+            set(copy_file_input ${copy_file_src})
+            set(copy_file_out "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_BUILD_TYPE}/${copy_file}")
+        else()
+            set(copy_file_input "${CMAKE_CURRENT_SOURCE_DIR}/${copy_file_src}")
+            set(copy_file_out "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_BUILD_TYPE}/${copy_file_src}")
+        endif()
         list(APPEND copy_file_inputs ${copy_file_input})
         add_custom_command(
             OUTPUT ${copy_file_out}

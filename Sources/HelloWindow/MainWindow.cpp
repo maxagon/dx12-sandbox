@@ -7,7 +7,6 @@
 #include "WindowDX12.h"
 #include "CommandAllocatorPool.h"
 
-
 int SDL_main(int argc, char *argv[])
 {
     DCHECK(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE) == 0);
