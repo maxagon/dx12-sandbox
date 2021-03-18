@@ -6,6 +6,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(D3D12Sandbox)
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE})
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules)
+
+include(target_files)
+
 # Sources
 add_subdirectory(Sources/HelloWindow)
 add_subdirectory(Sources/Utils)

@@ -6,7 +6,18 @@ set(SOURCE_FILES
     CommandAllocatorPool.cpp
 )
 
-add_executable(${TARGET} ${SOURCE_FILES})
+set(SHADER_FILES
+    shaders/TestShader.hlsl
+)
+
+add_executable(${TARGET} "")
+
+target_files(${TARGET}
+    PUBLIC
+        ${SOURCE_FILES}
+    ASSETS
+        ${SHADER_FILES}
+)
 
 target_link_libraries(${TARGET} PUBLIC
     Utils
