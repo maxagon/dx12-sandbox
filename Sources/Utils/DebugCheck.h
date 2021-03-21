@@ -2,9 +2,20 @@
 
 #include <string>
 #include <sstream>
+#include <utility>
 #include <windows.h>
 #include <intrin.h>
 #include <comdef.h>
+#include <fmt/core.h>
+
+template<typename ...Args>
+static void DebugPrint(Args&&... args)
+{
+    auto str = fmt::format(std::forward<Args>(args)...);
+    std::wstring wstr(str.cbegin(), str.cend());
+    wstr.push_back('\n');
+    OutputDebugStringW(wstr.c_str());
+}
 
 static bool ShowDebugMessageBox(const char* message, const char* info)
 {
