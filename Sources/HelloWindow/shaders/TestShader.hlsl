@@ -4,7 +4,7 @@ struct InputPS
     float4 position : SV_Position;
 };
 
-InputPS MainVS(float4 position : SV_POSITION)
+InputPS MainVS(float4 position : POSITION)
 {
     InputPS result;
 
