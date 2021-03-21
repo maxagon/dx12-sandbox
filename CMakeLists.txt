@@ -18,6 +18,7 @@ include(target_files)
 # Sources
 add_subdirectory(Sources/HelloWindow)
 add_subdirectory(Sources/Utils)
+add_subdirectory(Sources/ShaderCompiler)
 
 # 3rd party
 set(SDL_SHARED 0)
