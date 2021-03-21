@@ -21,10 +21,11 @@ target_files(${TARGET}
 
 target_link_libraries(${TARGET} PUBLIC
     Utils
+    ShaderCompiler
+
     SDL2-static
     SDL2main
     d3dx12
-
     dxgi
     d3d12
 )

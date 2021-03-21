@@ -1,18 +1,18 @@
 
 struct InputPS
 {
-    float3 position;
+    float4 position : SV_Position;
 };
 
 InputPS MainVS(float4 position : SV_POSITION)
 {
-    PSInput result;
+    InputPS result;
 
-    result.position = position.xyz;
+    result.position = position;
     return result;
 }
 
 float4 MainPS(InputPS input) : SV_TARGET
 {
-    return float4(input.position, 1.0);
+    return float4(input.position.xyz, 1.0);
 }

@@ -1,7 +1,9 @@
 #include <memory>
 
-#include <SDL.h>
 #include <DebugCheck.h>
+#include <ShaderCompiler.h>
+
+#include <SDL.h>
 #include <d3d12.h>
 
 #include "WindowDX12.h"
@@ -28,6 +30,11 @@ int SDL_main(int argc, char *argv[])
     static constexpr uint32_t backbufferCount = 2;
     auto dx12Window = std::make_shared<WindowDX12>(GetActiveWindow(), device, backbufferCount);
     auto allocatorPool = std::make_shared<CommandAllocatorPool>(device, backbufferCount);
+    auto shaderCompiler = std::make_shared<ShaderCompiler>();
+
+    auto testShaderSource = shaderCompiler->GetShader(L"shaders/TestShader.hlsl");
+    auto vsBytecode = shaderCompiler->Compile(L"TestShader.hlsl", testShaderSource, ShaderType::VS, L"MainVS");
+    auto psBytecode = shaderCompiler->Compile(L"TestShader.hlsl", testShaderSource, ShaderType::PS, L"MainPS");
 
     while (true)
     {

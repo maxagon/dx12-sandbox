@@ -6,7 +6,7 @@
 #include <windows.h>
 #include <intrin.h>
 #include <comdef.h>
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 template<typename ...Args>
 static void DebugPrint(Args&&... args)

@@ -2,6 +2,7 @@
 
 #include <DebugCheck.h>
 #include <fmt/core.h>
+#include <filesystem>
 
 ShaderCompiler::ShaderCompiler()
 {
@@ -12,8 +13,18 @@ ShaderCompiler::ShaderCompiler()
 
 CComPtr<IDxcBlobEncoding> ShaderCompiler::GetShader(const std::wstring& shader)
 {
+    static std::filesystem::path exeFolder;
+    if (exeFolder.empty())
+    {
+        WCHAR winExePath[MAX_PATH];
+        GetModuleFileNameW(NULL, winExePath, MAX_PATH);
+        exeFolder.assign(winExePath);
+        exeFolder = exeFolder.remove_filename();
+    }
+
     CComPtr<IDxcBlobEncoding> source = nullptr;
-    mUtils->LoadFile(shader.c_str(), nullptr, &source);
+    std::filesystem::path fullPath = exeFolder.append(shader);
+    DCHECK_COM(mUtils->LoadFile(fullPath.c_str(), nullptr, &source));
     return source;
 }
 
