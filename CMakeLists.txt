@@ -26,3 +26,5 @@ add_subdirectory(3rdparty/SDL)
 add_subdirectory(3rdparty/d3dx12)
 
 add_subdirectory(3rdparty/DirectXShaderCompiler)
+
+add_subdirectory(3rdparty/fmt)
