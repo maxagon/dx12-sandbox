@@ -70,7 +70,7 @@ CComPtr<IDxcBlob> ShaderCompiler::Compile(const std::wstring& shaderName, CComPt
     if (errors != nullptr && errors->GetStringLength() != 0)
     {
         DebugPrint(L"Compile shader: {}", shaderName);
-        DebugPrint(errors->GetStringPointer());
+        DebugPrint("{}", errors->GetStringPointer());
     }
 
     HRESULT status;
