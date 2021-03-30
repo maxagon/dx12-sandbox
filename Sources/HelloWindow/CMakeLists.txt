@@ -22,6 +22,7 @@ target_files(${TARGET}
 target_link_libraries(${TARGET} PUBLIC
     Utils
     ShaderCompiler
+    RenderingCore
 
     SDL2-static
     SDL2main
