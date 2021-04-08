@@ -9,6 +9,19 @@
 class DescriptorHeapAllocator
 {
 public:
+    DescriptorHeapAllocator(const DescriptorHeapAllocator&) = delete;
+    DescriptorHeapAllocator& operator=(const DescriptorHeapAllocator&) = delete;
+
+    DescriptorHeapAllocator(D3D12_CPU_DESCRIPTOR_HANDLE cpuHeapStart, D3D12_GPU_DESCRIPTOR_HANDLE gpuHeapStart,
+        uint64_t descriptorsInBlock, uint64_t heapBlockSize, uint64_t numOfBlocks, ID3D12DescriptorHeap* heap)
+        : mVirtualBlockAllocator(descriptorsInBlock)
+        , mVirtualBlockSize(numOfBlocks)
+        , mCpuHeapStart(cpuHeapStart)
+        , mGpuHeapStart(gpuHeapStart)
+        , mHeapBlockSize(heapBlockSize)
+        , mDescriptorHeap(heap)
+    {}
+
     DescriptorHeapAllocator(ID3D12Device* device, uint64_t descriptorsInBlock,
         uint64_t numOfBlocks, D3D12_DESCRIPTOR_HEAP_TYPE heapType, D3D12_DESCRIPTOR_HEAP_FLAGS heapFlags)
         : mVirtualBlockAllocator(descriptorsInBlock)
@@ -19,7 +32,7 @@ public:
         heapDesc.Type = heapType;
         heapDesc.Flags = heapFlags;
         heapDesc.NumDescriptors = descriptorsInBlock * numOfBlocks;
-        device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&mDescriptorHeap));
+        DCHECK_COM(device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&mDescriptorHeap)));
         mCpuHeapStart = mDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
         if (heapFlags & D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE)
         {
@@ -50,6 +63,18 @@ public:
     void Deallocate(uint64_t blockStart, uint64_t numOfBlocks)
     {
         mVirtualBlockAllocator.FreeBlocks(numOfBlocks, blockStart);
+    }
+
+    std::shared_ptr<DescriptorHeapAllocator> CreateSubAllocator(uint64_t numOfBlocks, uint64_t* subAllocatorBlocks)
+    {
+        if (!Allocate(numOfBlocks, subAllocatorBlocks))
+        {
+            return nullptr;
+        }
+
+        D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = (mGpuHeapStart.ptr == 0) ? mGpuHeapStart : GetGpuHandle(*subAllocatorBlocks);
+        return std::make_shared<DescriptorHeapAllocator>(GetCpuHandle(*subAllocatorBlocks), gpuHandle,
+            mVirtualBlockSize, mHeapBlockSize, numOfBlocks, mDescriptorHeap.p);
     }
 
 private:

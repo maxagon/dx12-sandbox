@@ -3,7 +3,6 @@
 #include <memory>
 #include <deque>
 #include <algorithm>
-#include <optional>
 
 class BlockAllocator
 {
@@ -57,9 +56,6 @@ public:
         //   n - 1        n         n + 1
         // leftBlock blockToFree rightBlock
 
-        std::optional<FreeMemBlock&> rightBlock;
-        std::optional<FreeMemBlock&> leftBlock;
-
         bool isNotEnd = iter != mFreeSpace.end();
         bool isNotBegin = iter != mFreeSpace.begin();
 
@@ -68,27 +64,32 @@ public:
 
         if (isNotBegin)
         {
-            leftBlock = *(iter - 1);
-            mergeLeft = (*leftBlock).pos + (*leftBlock).size == blockToFree.pos;
+            FreeMemBlock& leftBlock = *(iter - 1);
+            mergeLeft = leftBlock.pos + leftBlock.size == blockToFree.pos;
         }
         if (isNotEnd)
         {
-            rightBlock = *iter;
-            mergeRight = blockToFree.pos + blockToFree.size == (*rightBlock).pos;
+            FreeMemBlock& rightBlock = *iter;
+            mergeRight = blockToFree.pos + blockToFree.size == rightBlock.pos;
         }
 
         if (mergeLeft && mergeRight)
         {
-            (*leftBlock).size += (*rightBlock).size + blockToFree.size;
+            FreeMemBlock& leftBlock = *(iter - 1);
+            FreeMemBlock& rightBlock = *iter;
+            leftBlock.size += rightBlock.size + blockToFree.size;
             mFreeSpace.erase(iter);
         }
         else if(mergeRight)
         {
-            (*rightBlock).pos = blockToFree.pos;
+            FreeMemBlock& rightBlock = *iter;
+            rightBlock.pos = blockToFree.pos;
+            rightBlock.size += blockToFree.size;
         }
         else if(mergeLeft)
         {
-            (*leftBlock).size += blockToFree.size;
+            FreeMemBlock& leftBlock = *(iter - 1);
+            leftBlock.size += blockToFree.size;
         }
         else
         {
