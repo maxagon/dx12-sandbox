@@ -3,7 +3,6 @@ set(TARGET MainWindow)
 set(SOURCE_FILES
     MainWindow.cpp
     WindowDX12.cpp
-    CommandAllocatorPool.cpp
 )
 
 set(SHADER_FILES

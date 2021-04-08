@@ -4,7 +4,7 @@ struct CBDesc
     float2 resolution;
 };
 
-ConstantBuffer<CBDesc> cb : register (b0);
+// ConstantBuffer<CBDesc> cb : register (b0);
 
 struct InputPS
 {
@@ -20,5 +20,5 @@ InputPS MainVS(float4 position : POSITION)
 
 float4 MainPS(InputPS input) : SV_TARGET
 {
-    return float4(input.position.xy / cb.resolution, 0.3, 1.0);
+    return float4(0.3, 0.2, 0.1, 1.0);
 }
